@@ -27,19 +27,17 @@ ACADEMIC_STYLE = {
     "figure.figsize": (8, 6),
     "figure.dpi": 150,
     "font.family": "Times New Roman",
-    "font.size": 14,
-    "axes.titlesize": 18,
-    "axes.labelsize": 17,
-    "axes.titleweight": "semibold",
+    "font.size": 16,
+    "axes.labelsize": 19,
     "axes.labelweight": "semibold",
     "axes.linewidth": 0.9,
     "axes.grid": True,
     "grid.alpha": 0.3,
     "grid.linestyle": "--",
-    "legend.fontsize": 14,
+    "legend.fontsize": 16,
     "legend.framealpha": 0.9,
-    "xtick.labelsize": 16,
-    "ytick.labelsize": 16,
+    "xtick.labelsize": 18,
+    "ytick.labelsize": 18,
     "xtick.major.width": 0.8,
     "ytick.major.width": 0.8,
     "xtick.major.size": 3.5,
@@ -197,14 +195,16 @@ def plot_reward_comparison(
 
         ax.set_xlabel("Episode", labelpad=8, color=TEXT_COLOR)
         ax.set_ylabel("Average Team Reward", labelpad=8, color=TEXT_COLOR)
-        ax.set_title("Training Reward Comparison", pad=11, color=TEXT_COLOR)
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         _paper_axes(ax)
         legend = ax.legend(
             loc="best",
+            ncol=2,
+            prop={"family": "Times New Roman", "size": 15, "weight": "semibold"},
+            labelcolor="#000000",
             fancybox=True,
             shadow=False,
-            handlelength=2.0,
+            handlelength=1.6,
         )
         for legend_line in legend.get_lines():
             legend_line.set_linewidth(5.0)

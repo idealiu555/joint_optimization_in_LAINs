@@ -19,13 +19,12 @@ import numpy as np
 
 CONFERENCE_STYLE: dict[str, object] = {
     "font.family": "Times New Roman",
-    "font.size": 14,
-    "axes.labelsize": 17,
-    "axes.titlesize": 18,
-    "axes.titleweight": "semibold",
+    "font.size": 16,
+    "axes.labelsize": 19,
     "axes.labelweight": "semibold",
-    "xtick.labelsize": 16,
-    "ytick.labelsize": 16,
+    "xtick.labelsize": 18,
+    "ytick.labelsize": 18,
+    "legend.fontsize": 16,
     "axes.linewidth": 0.9,
     "xtick.major.width": 0.8,
     "ytick.major.width": 0.8,
@@ -188,6 +187,7 @@ def plot_energy_latency_bubble(
         ax.set_ylim(y_min, y_max)
         x_span = x_max - x_min
         y_span = y_max - y_min
+        left_label_algorithms = {"maddpg", "matd3"}
 
         for i, (label, energy, latency, size) in enumerate(
             zip(labels, energy_vals, latency_vals, bubble_sizes)
@@ -205,27 +205,6 @@ def plot_energy_latency_bubble(
                 plot_energy = x_max - 0.16 * x_span
                 plot_latency = y_max - 0.030 * y_span
                 plot_label = f"{label}\n(outlier)"
-                random_arrow_start = (
-                    plot_energy + 0.01 * x_span,
-                    plot_latency + 0.018 * y_span,
-                )
-                random_arrow_end = (
-                    plot_energy + 0.060 * x_span,
-                    plot_latency + 0.072 * y_span,
-                )
-                ax.annotate(
-                    "",
-                    xy=random_arrow_end,
-                    xytext=random_arrow_start,
-                    annotation_clip=False,
-                    arrowprops={
-                        "arrowstyle": "-|>",
-                        "color": "#68777D",
-                        "linewidth": 1.2,
-                        "mutation_scale": 11,
-                    },
-                    zorder=5,
-                )
             ax.scatter(
                 plot_energy,
                 plot_latency,
@@ -238,13 +217,14 @@ def plot_energy_latency_bubble(
             )
 
             marker_radius_points = np.sqrt(size) * 0.56
-            dx = marker_radius_points + 2.5
+            label_on_left = label.lower() in left_label_algorithms
+            dx = -(marker_radius_points + 2.5) if label_on_left else marker_radius_points + 2.5
             ax.annotate(
                 plot_label,
                 xy=(plot_energy, plot_latency),
                 xytext=(dx, 0),
                 textcoords="offset points",
-                ha="left",
+                ha="right" if label_on_left else "left",
                 va="center",
                 fontsize=14,
                 fontweight="semibold",
@@ -254,7 +234,6 @@ def plot_energy_latency_bubble(
 
         ax.set_xlabel("Average Energy(J)", labelpad=8, color=TEXT_COLOR)
         ax.set_ylabel("Average Latency(s)", labelpad=8, color=TEXT_COLOR)
-        ax.set_title("Energy-Latency-Coverage Trade-off", pad=11, color=TEXT_COLOR)
 
         _paper_axes(ax)
         ax.set_xticks([tick for tick in ax.get_xticks() if tick <= 530.0 or np.isclose(tick, 530.0)])
@@ -282,8 +261,8 @@ def plot_energy_latency_bubble(
             clip_on=False,
         )
 
-        lower_arrow_start = (0.180, 0.2140)
-        lower_arrow_end = (0.032, 0.056)
+        lower_arrow_start = (0.200, 0.240)
+        lower_arrow_end = (0.045, 0.070)
         lower_latency_text_pos = (0.041, 0.148)
         lower_energy_text_pos = (0.090, 0.046)
         lower_text_angle_start = lower_arrow_start
@@ -300,10 +279,12 @@ def plot_energy_latency_bubble(
             xytext=lower_arrow_start,
             xycoords="axes fraction",
             arrowprops={
-                "arrowstyle": "-|>",
+                "arrowstyle": "->,head_length=0.65,head_width=0.4",
                 "color": "#68777D",
-                "linewidth": 1.2,
-                "mutation_scale": 11,
+                "linewidth": 1.8,
+                "mutation_scale": 12,
+                "capstyle": "round",
+                "joinstyle": "round",
                 "shrinkA": 0,
                 "shrinkB": 0,
             },
@@ -317,9 +298,10 @@ def plot_energy_latency_bubble(
             va="center",
             rotation=arrow_text_angle,
             rotation_mode="anchor",
-            fontsize=11,
+            fontsize=13,
+            fontweight="semibold",
             color="#68777D",
-            fontfamily="sans-serif",
+            fontfamily="Times New Roman",
             zorder=7,
         )
         ax.annotate(
@@ -330,9 +312,10 @@ def plot_energy_latency_bubble(
             va="center",
             rotation=arrow_text_angle,
             rotation_mode="anchor",
-            fontsize=11,
+            fontsize=13,
+            fontweight="semibold",
             color="#68777D",
-            fontfamily="sans-serif",
+            fontfamily="Times New Roman",
             zorder=7,
         )
 

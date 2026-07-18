@@ -1,7 +1,7 @@
-"""Draw two compact scalability figures from UE-number test summaries.
+"""Draw a latency-versus-UE scalability figure from test summaries.
 python plot_scalability_summary.py
 The script reads files named ``{ue}_{algorithm}_test_summary.json`` from
-``test_logs`` and writes publication-ready latency and coverage figures to
+``test_logs`` and writes a publication-ready latency figure to
 ``test_plots/scalability``.
 """
 
@@ -62,13 +62,12 @@ GRID = "#E3E8EF"
 
 CONFERENCE_STYLE: dict[str, object] = {
     "font.family": "Times New Roman",
-    "font.size": 14,
-    "axes.labelsize": 17,
-    "axes.titlesize": 18,
-    "axes.titleweight": "semibold",
+    "font.size": 16,
+    "axes.labelsize": 19,
     "axes.labelweight": "semibold",
-    "xtick.labelsize": 16,
-    "ytick.labelsize": 16,
+    "xtick.labelsize": 18,
+    "ytick.labelsize": 18,
+    "legend.fontsize": 16,
     "axes.linewidth": 0.9,
     "xtick.major.width": 0.8,
     "ytick.major.width": 0.8,
@@ -102,7 +101,7 @@ def load_summary_data(input_dir: Path) -> list[dict[str, float | int | str]]:
         with path.open("r", encoding="utf-8") as handle:
             payload = json.load(handle)
         averages = payload.get("averages", {})
-        missing = {"latency", "energy", "fairness"} - set(averages)
+        missing = {"latency"} - set(averages)
         if missing:
             missing_text = ", ".join(sorted(missing))
             raise ValueError(f"{path} is missing averages: {missing_text}")
@@ -111,8 +110,6 @@ def load_summary_data(input_dir: Path) -> list[dict[str, float | int | str]]:
                 "ue": int(match.group("ue")),
                 "algorithm": match.group("algorithm"),
                 "latency": float(averages["latency"]),
-                "energy": float(averages["energy"]),
-                "coverage": float(averages["fairness"]),
             }
         )
     if not rows:
@@ -145,11 +142,8 @@ def save_pub_figure(fig: plt.Figure, output_prefix: Path) -> None:
         print(f"saved: {out}")
 
 
-def draw_metric_figure(
+def draw_latency_figure(
     rows: list[dict[str, float | int | str]],
-    metric: str,
-    ylabel: str,
-    title: str,
     output_prefix: Path,
 ) -> None:
     style_matplotlib()
@@ -157,6 +151,7 @@ def draw_metric_figure(
     algorithms = [algo for algo in ALGORITHM_ORDER if any(row["algorithm"] == algo for row in rows)]
 
     fig, ax = plt.subplots(figsize=(8, 6), constrained_layout=True)
+    marker_size_scale = 1.17
     ax.set_axisbelow(True)
     ax.grid(True, which="major", color=GRID, linewidth=0.75, alpha=0.85)
     for side in ("left", "bottom"):
@@ -170,7 +165,7 @@ def draw_metric_figure(
             key=lambda row: int(row["ue"]),
         )
         x = [int(row["ue"]) for row in series]
-        y = [float(row[metric]) for row in series]
+        y = [float(row["latency"]) for row in series]
         color = PALETTE[algorithm]
         is_focus = algorithm == "amasac"
         ax.plot(
@@ -178,7 +173,7 @@ def draw_metric_figure(
             y,
             color=color,
             marker=MARKERS.get(algorithm, "o"),
-            markersize=11.5 if is_focus else 11.0,
+            markersize=(11.5 if is_focus else 11.0) * marker_size_scale,
             markeredgecolor="white",
             markeredgewidth=1.45,
             linewidth=4.0 if is_focus else 3.2,
@@ -187,17 +182,13 @@ def draw_metric_figure(
             zorder=4 if is_focus else 2,
         )
 
-    values = [float(row[metric]) for row in rows]
+    values = [float(row["latency"]) for row in rows]
     margin = (max(values) - min(values)) * 0.08
     ax.set_xlim(min(ues) - 8, max(ues) + 8)
     ax.set_ylim(min(values) - margin, max(values) + margin)
     ax.set_xticks(ues)
     ax.set_xlabel("Number of UEs", color=TEXT, labelpad=5)
-    ax.set_ylabel(ylabel, color=TEXT, labelpad=5)
-    ax.set_title(title, color=TEXT, pad=5)
-
-    if metric == "coverage":
-        ax.set_ylim(max(0.5, min(values) - margin), min(1.0, max(values) + margin))
+    ax.set_ylabel("Latency", color=TEXT, labelpad=5)
 
     legend_handles = []
     for algorithm in algorithms:
@@ -208,7 +199,7 @@ def draw_metric_figure(
                 [0],
                 color=PALETTE[algorithm],
                 marker=MARKERS.get(algorithm, "o"),
-                markersize=9.8 if is_focus else 9.4,
+                markersize=(9.8 if is_focus else 9.4) * marker_size_scale,
                 markeredgecolor="white",
                 markeredgewidth=1.25,
                 linewidth=5.0,
@@ -221,9 +212,10 @@ def draw_metric_figure(
         handles=legend_handles,
         loc="best",
         ncol=2,
+        prop={"family": "Times New Roman", "size": 15, "weight": "semibold"},
+        labelcolor="#000000",
         columnspacing=1.0,
         handlelength=1.8,
-        fontsize=14,
     )
     for line in legend.get_lines():
         line.set_linewidth(5.0)
@@ -242,26 +234,9 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     rows = load_summary_data(args.input_dir)
-    draw_metric_figure(
+    draw_latency_figure(
         rows,
-        metric="latency",
-        ylabel="Latency",
-        title="Latency scalability",
         output_prefix=args.output_dir / "latency_vs_ue",
-    )
-    draw_metric_figure(
-        rows,
-        metric="coverage",
-        ylabel="Coverage",
-        title="Coverage scalability",
-        output_prefix=args.output_dir / "coverage_vs_ue",
-    )
-    draw_metric_figure(
-        rows,
-        metric="energy",
-        ylabel="Energy",
-        title="Energy scalability",
-        output_prefix=args.output_dir / "energy_vs_ue",
     )
 
 
