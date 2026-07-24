@@ -24,5 +24,3 @@ comparison_plots/
 saved_data/
 
 # Model checkpoints (stored outside Git)
-*.pt
-*.pth
