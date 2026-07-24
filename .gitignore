@@ -2,17 +2,15 @@ __pycache__/
 .mypy_cache/
 .vscode/
 .venv/
-*.pth
 rough*
 simulation_frames/
-train_logs/
-test_logs/
+saved_train_logs/
 train_plots/
+saved_test_logs/
 test_plots/
 saved_models/
 *.png
 *.txt
-*.json
 AGENTS.md
 log/
 docs/superpowers
@@ -24,3 +22,7 @@ question.md
 comparison_plots/
 .DS_Store
 saved_data/
+
+# Model checkpoints (stored outside Git)
+*.pt
+*.pth

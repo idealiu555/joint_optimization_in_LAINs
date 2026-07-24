@@ -1,0 +1,12 @@
+{
+  "num_episodes": 50,
+  "averages": {
+    "reward": -4.405601393203295,
+    "latency": 10653.92216386898,
+    "energy": 544.9381883604902,
+    "fairness": 0.4690014251442527,
+    "rate": 463849792.5447516,
+    "collisions": 0.0,
+    "boundaries": 170.08
+  }
+}
